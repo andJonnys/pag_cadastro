@@ -1,0 +1,164 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MaterialApp(
+    home: CadastroUsuarioPage(),
+    debugShowCheckedModeBanner: false,
+  ));
+}
+
+class CadastroUsuarioPage extends StatefulWidget {
+  @override
+  _CadastroUsuarioPageState createState() => _CadastroUsuarioPageState();
+}
+
+class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _nomeController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _senhaController = TextEditingController();
+  final _confirmarSenhaController = TextEditingController();
+
+  bool _aceitaTermos = false;
+
+  void _cadastrar() {
+    if (_formKey.currentState!.validate()) {
+      if (!_aceitaTermos) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(" Você precisa aceitar os termos de uso.")),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Cadastro realizado com sucesso, ${_nomeController.text}!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  void _limparCampos() {
+    _nomeController.clear();
+    _emailController.clear();
+    _senhaController.clear();
+    _confirmarSenhaController.clear();
+    _formKey.currentState!.reset();
+    setState(() {
+      _aceitaTermos = false;
+    });
+  }
+
+  String? _validarNome(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Nome obrigatório';
+    if (value.trim().length < 3) return 'Nome deve ter pelo menos 3 caracteres';
+    return null;
+  }
+
+  String? _validarEmail(String? value) {
+    if (value == null || value.trim().isEmpty) return 'E-mail obrigatório';
+    if (!value.contains('@') || !value.contains('.')) return 'E-mail inválido';
+    return null;
+  }
+
+  String? _validarSenha(String? value) {
+    if (value == null || value.isEmpty) return 'Senha obrigatória';
+    if (value.length < 6) return 'Senha deve ter pelo menos 6 caracteres';
+    if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) return 'Deve conter uma letra maiúscula';
+    if (!RegExp(r'(?=.*\d)').hasMatch(value)) return 'Deve conter um número';
+    return null;
+  }
+
+  String? _validarConfirmarSenha(String? value) {
+    if (value == null || value.isEmpty) return 'Confirme sua senha';
+    if (value != _senhaController.text) return 'As senhas não coincidem';
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _emailController.dispose();
+    _senhaController.dispose();
+    _confirmarSenhaController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cadastro de Usuário'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                decoration: InputDecoration(
+                  labelText: ' Nome completo',
+                ),
+                validator: _validarNome,
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'E-mail',
+                ),
+                validator: _validarEmail,
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _senhaController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                ),
+                validator: _validarSenha,
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _confirmarSenhaController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Confirmar senha',
+                ),
+                validator: _validarConfirmarSenha,
+              ),
+              SizedBox(height: 15),
+              CheckboxListTile(
+                title: Text('Aceito os termos de uso'),
+                value: _aceitaTermos,
+                onChanged: (value) {
+                  setState(() {
+                    _aceitaTermos = value ?? false;
+                  });
+                },
+              ),
+              SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    onPressed: _aceitaTermos ? _cadastrar : null,
+                    child: Text('Cadastrar'),
+                  ),
+                  OutlinedButton(
+                    onPressed: _limparCampos,
+                    child: Text('Limpar'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
