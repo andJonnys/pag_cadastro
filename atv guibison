@@ -17,6 +17,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
 
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
+  final _idadeController = TextEditingController(); // bônus
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
 
@@ -26,15 +27,18 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
     if (_formKey.currentState!.validate()) {
       if (!_aceitaTermos) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(" Você precisa aceitar os termos de uso.")),
+          SnackBar(content: Text("Você precisa aceitar os termos de uso.")),
         );
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Cadastro realizado com sucesso, ${_nomeController.text}!"),
-          backgroundColor: Colors.green,
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConfirmacaoScreen(
+            nome: _nomeController.text,
+            idade: _idadeController.text,
+          ),
         ),
       );
     }
@@ -43,6 +47,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
   void _limparCampos() {
     _nomeController.clear();
     _emailController.clear();
+    _idadeController.clear();
     _senhaController.clear();
     _confirmarSenhaController.clear();
     _formKey.currentState!.reset();
@@ -60,6 +65,13 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
   String? _validarEmail(String? value) {
     if (value == null || value.trim().isEmpty) return 'E-mail obrigatório';
     if (!value.contains('@') || !value.contains('.')) return 'E-mail inválido';
+    return null;
+  }
+
+  String? _validarIdade(String? value) {
+    if (value == null || value.isEmpty) return 'Idade obrigatória';
+    final idade = int.tryParse(value);
+    if (idade == null || idade < 0) return 'Informe uma idade válida';
     return null;
   }
 
@@ -81,6 +93,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
   void dispose() {
     _nomeController.dispose();
     _emailController.dispose();
+    _idadeController.dispose();
     _senhaController.dispose();
     _confirmarSenhaController.dispose();
     super.dispose();
@@ -101,7 +114,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
               TextFormField(
                 controller: _nomeController,
                 decoration: InputDecoration(
-                  labelText: ' Nome completo',
+                  labelText: 'Nome completo',
                 ),
                 validator: _validarNome,
               ),
@@ -112,6 +125,15 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
                   labelText: 'E-mail',
                 ),
                 validator: _validarEmail,
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _idadeController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Idade',
+                ),
+                validator: _validarIdade,
               ),
               SizedBox(height: 10),
               TextFormField(
@@ -154,6 +176,48 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
                     child: Text('Limpar'),
                   ),
                 ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+/// NOVA TELA DE CONFIRMAÇÃO
+class ConfirmacaoScreen extends StatelessWidget {
+  final String nome;
+  final String idade;
+
+  const ConfirmacaoScreen({required this.nome, required this.idade});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Confirmação"),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Usuário $nome cadastrado com sucesso!',
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Idade informada: $idade anos',
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 30),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back),
+                label: Text('Voltar'),
               ),
             ],
           ),
